@@ -1,0 +1,3 @@
+[submodule "ml/klab"]
+	path = ml/klab
+	url = git@github.com:kscalelabs/klab.git
