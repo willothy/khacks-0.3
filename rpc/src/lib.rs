@@ -8,7 +8,7 @@ use kos::{
     },
     kos_proto::system::system_service_client::SystemServiceClient,
 };
-use std::{fmt::Debug, future::Future, ops::Deref, sync::Arc};
+use std::{fmt::Debug, future::Future, ops::Deref, sync::Arc, time::Duration};
 use tokio::sync::Mutex;
 use tonic::transport::Channel;
 
@@ -89,8 +89,14 @@ impl Deref for Client {
     }
 }
 
+pub struct Config {
+    pub server_url: String,
+    pub imu_poll_interval_ms: u64,
+}
+
 pub struct KBot {
-    client: Client,
+    pub client: Client,
+    pub config: Arc<Config>,
 }
 
 pub trait Robot: Sized {
@@ -98,7 +104,7 @@ pub trait Robot: Sized {
 
     fn get_actuator_id(joint: Joint, axis: Option<Axis>) -> Option<u32>;
 
-    fn initialize(client: Client) -> impl Future<Output = eyre::Result<Self>>;
+    fn initialize(client: Client, config: Config) -> impl Future<Output = eyre::Result<Self>>;
 }
 
 impl Robot for KBot {
@@ -139,7 +145,7 @@ impl Robot for KBot {
         })
     }
 
-    async fn initialize(client: Client) -> eyre::Result<Self> {
+    async fn initialize(client: Client, config: Config) -> eyre::Result<Self> {
         for actuator_id in Self::list_actuator_ids() {
             client
                 .actuator
@@ -160,11 +166,10 @@ impl Robot for KBot {
                 .await?;
         }
 
-        tokio::spawn(async move {
-            // TODO: poll IMU data
-        });
-
-        Ok(Self { client })
+        Ok(Self {
+            client,
+            config: Arc::new(config),
+        })
     }
 }
 
@@ -176,10 +181,43 @@ pub struct JointCommand {
 }
 
 impl KBot {
-    pub async fn connect(addr: String) -> eyre::Result<Self> {
+    pub async fn connect(addr: String, config: Config) -> eyre::Result<Self> {
         let client = Client::connect(addr).await?;
 
-        Self::initialize(client).await
+        let bot = Self::initialize(client.clone(), config).await?;
+
+        tokio::spawn({
+            let client = client.clone();
+            let config = bot.config.clone();
+            async move {
+                let mut interval =
+                    tokio::time::interval(Duration::from_millis(config.imu_poll_interval_ms));
+                let requests = reqwest::Client::new();
+
+                loop {
+                    interval.tick().await;
+
+                    let data = client
+                        .imu
+                        .lock()
+                        .await
+                        .get_values(())
+                        .await
+                        .expect("failed to read IMU data :(");
+
+                    if let Err(e) = requests
+                        .post(&config.server_url)
+                        .body(prost::Message::encode_to_vec(&data.into_inner()))
+                        .send()
+                        .await
+                    {
+                        tracing::error!("{e}");
+                    }
+                }
+            }
+        });
+
+        Ok(bot)
     }
 
     pub async fn command_joint(
