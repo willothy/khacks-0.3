@@ -3,4 +3,5 @@
 	url = git@github.com:kscalelabs/genesis_playground.git
 [submodule "ml/mujoco_playground"]
 	path = ml/mujoco_playground
-	url = https://github.com/kscalelabs/mujoco_playground.git
+	url = git@github.com:JChunX/mujoco_playground.git
+	branch = jason/khack
