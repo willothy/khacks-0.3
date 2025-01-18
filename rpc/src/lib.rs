@@ -1,14 +1,16 @@
+use core::f32;
 use kos::{
     hal::{
         actuator_service_client::ActuatorServiceClient, imu_service_client::ImuServiceClient,
         inference_service_client::InferenceServiceClient,
         led_matrix_service_client::LedMatrixServiceClient,
         process_manager_service_client::ProcessManagerServiceClient,
-        sound_service_client::SoundServiceClient,
+        sound_service_client::SoundServiceClient, CalibrateActuatorResponse,
+        ConfigureActuatorRequest, GetActuatorsStateRequest,
     },
     kos_proto::system::system_service_client::SystemServiceClient,
 };
-use std::sync::Arc;
+use std::{future::Future, ops::Deref, sync::Arc};
 use tokio::sync::Mutex;
 use tonic::{transport::Channel, Result};
 
@@ -41,10 +43,6 @@ pub enum Axis {
     Pitch,
     Yaw,
     Roll,
-}
-
-pub trait JointMapping {
-    fn get_actuator_id(joint: Joint, axis: Option<Axis>) -> Option<u32>;
 }
 
 #[derive(Debug, Clone)]
@@ -82,7 +80,24 @@ pub struct KBot {
     client: Client,
 }
 
-impl JointMapping for KBot {
+pub trait Robot: Sized {
+    fn list_actuator_ids() -> Vec<u32>;
+
+    fn get_actuator_id(joint: Joint, axis: Option<Axis>) -> Option<u32>;
+
+    fn initialize(client: Client) -> impl Future<Output = eyre::Result<Self>>;
+}
+
+impl Robot for KBot {
+    fn list_actuator_ids() -> Vec<u32> {
+        vec![
+            11, 12, 13, 14, // left upper
+            21, 22, 23, 34, // right upper
+            31, 32, 33, 34, // left lower
+            41, 42, 43, 44, // right lower
+        ]
+    }
+
     fn get_actuator_id(joint: Joint, axis: Option<Axis>) -> Option<u32> {
         Some(match (joint, axis) {
             (Joint::LeftShoulder, Some(Axis::Yaw)) => 11,
@@ -110,6 +125,30 @@ impl JointMapping for KBot {
             _ => return None,
         })
     }
+
+    async fn initialize(client: Client) -> eyre::Result<Self> {
+        for actuator_id in Self::list_actuator_ids() {
+            client
+                .actuator
+                .lock()
+                .await
+                .configure_actuator(ConfigureActuatorRequest {
+                    actuator_id,
+                    kp: None,
+                    kd: None,
+                    ki: None,
+                    max_torque: None,
+                    protective_torque: None,
+                    protection_time: None,
+                    torque_enabled: Some(true),
+                    new_actuator_id: None,
+                    zero_position: None,
+                })
+                .await?;
+        }
+
+        Ok(Self { client })
+    }
 }
 
 impl KBot {
@@ -121,5 +160,13 @@ impl KBot {
 
     pub async fn set_joint(&self, joint: Joint, axis: Axis, value: f32) -> eyre::Result<()> {
         Ok(())
+    }
+}
+
+impl Deref for KBot {
+    type Target = Client;
+
+    fn deref(&self) -> &Self::Target {
+        &self.client
     }
 }
