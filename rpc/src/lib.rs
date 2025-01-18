@@ -149,10 +149,11 @@ impl Robot for KBot {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct JointCommand {
-    position: Option<f64>,
-    velocity: Option<f64>,
-    torque: Option<f64>,
+    pub position: Option<f64>,
+    pub velocity: Option<f64>,
+    pub torque: Option<f64>,
 }
 
 impl KBot {
