@@ -1,6 +1,3 @@
-[submodule "ml/klab"]
-	path = ml/klab
-	url = git@github.com:kscalelabs/klab.git
 [submodule "ml/genesis_playground"]
 	path = ml/genesis_playground
 	url = git@github.com:kscalelabs/genesis_playground.git
