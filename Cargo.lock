@@ -1371,6 +1371,7 @@ version = "0.1.0"
 dependencies = [
  "eyre",
  "kos",
+ "tokio",
  "tonic",
 ]
 
