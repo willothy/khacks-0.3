@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 eyre = "0.6.12"
 kos = { git = "https://github.com/kscalelabs/kos" }
+tokio = { version = "1.43.0", features = ["full"] }
 tonic = { version = "0.12", git = "https://github.com/kscalelabs/tonic-milkv" }
