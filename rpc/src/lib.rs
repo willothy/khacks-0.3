@@ -6,9 +6,14 @@ use kos::{
         process_manager_service_client::ProcessManagerServiceClient,
         sound_service_client::SoundServiceClient,
     },
-    kos_proto::{self as proto, system::system_service_client::SystemServiceClient},
+    kos_proto::system::system_service_client::SystemServiceClient,
 };
 use tonic::transport::Channel;
+
+pub mod proto {
+    pub use kos::google_proto as google;
+    pub use kos::kos_proto::*;
+}
 
 #[derive(Debug, Clone)]
 pub struct Client {
