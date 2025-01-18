@@ -1,4 +1,7 @@
-use rpc::{ActuatorCommand, CommandActuatorsRequest};
+use rpc::{
+  proto::actuator::ConfigureActuatorRequest, ActuatorCommand,
+  CommandActuatorsRequest,
+};
 
 #[tokio::main]
 async fn main() {
@@ -9,10 +12,20 @@ async fn main() {
   println!("connected");
   client
     .actuator
+    .configure_actuator(ConfigureActuatorRequest {
+      actuator_id: 21,
+      torque_enabled: Some(true),
+      ..Default::default()
+    })
+    .await
+    .unwrap();
+  println!("yoooo");
+  client
+    .actuator
     .command_actuators(CommandActuatorsRequest {
       commands: vec![ActuatorCommand {
         actuator_id: 21,
-        position: Some(100.),
+        position: Some(70.),
         velocity: None,
         torque: None,
       }],
