@@ -4,7 +4,8 @@ use kos::{
         inference_service_client::InferenceServiceClient,
         led_matrix_service_client::LedMatrixServiceClient,
         process_manager_service_client::ProcessManagerServiceClient,
-        sound_service_client::SoundServiceClient, ConfigureActuatorRequest,
+        sound_service_client::SoundServiceClient, ConfigureActuatorRequest, WriteBufferRequest,
+        WriteColorBufferRequest,
     },
     kos_proto::system::system_service_client::SystemServiceClient,
 };
@@ -185,6 +186,22 @@ impl KBot {
         let client = Client::connect(addr).await?;
 
         let bot = Self::initialize(client.clone(), config).await?;
+
+        client
+            .led_matrix
+            .lock()
+            .await
+            // .write_color_buffer(WriteColorBufferRequest {
+            //     buffer: vec![],
+            //     height: 16,
+            //     width: 32,
+            //     format: "".to_string(),
+            //     brightness: 100,
+            // })
+            .write_buffer(WriteBufferRequest {
+                buffer: std::iter::repeat(0xFF).take(16 * 32 * 8).collect(),
+            })
+            .await?;
 
         tokio::spawn({
             let client = client.clone();
