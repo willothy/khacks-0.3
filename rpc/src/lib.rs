@@ -8,7 +8,7 @@ use kos::{
     },
     kos_proto::system::system_service_client::SystemServiceClient,
 };
-use std::{future::Future, ops::Deref, sync::Arc};
+use std::{fmt::Debug, future::Future, ops::Deref, sync::Arc};
 use tokio::sync::Mutex;
 use tonic::transport::Channel;
 
@@ -43,15 +43,20 @@ pub enum Axis {
     Roll,
 }
 
+#[derive(Debug)]
+pub struct ClientInner {
+    pub imu: Mutex<ImuServiceClient<Channel>>,
+    pub actuator: Mutex<ActuatorServiceClient<Channel>>,
+    pub sound: Mutex<SoundServiceClient<Channel>>,
+    pub processes: Mutex<ProcessManagerServiceClient<Channel>>,
+    pub led_matrix: Mutex<LedMatrixServiceClient<Channel>>,
+    pub inference: Mutex<InferenceServiceClient<Channel>>,
+    pub system: Mutex<SystemServiceClient<Channel>>,
+}
+
 #[derive(Debug, Clone)]
 pub struct Client {
-    pub imu: Arc<Mutex<ImuServiceClient<Channel>>>,
-    pub actuator: Arc<Mutex<ActuatorServiceClient<Channel>>>,
-    pub sound: Arc<Mutex<SoundServiceClient<Channel>>>,
-    pub processes: Arc<Mutex<ProcessManagerServiceClient<Channel>>>,
-    pub led_matrix: Arc<Mutex<LedMatrixServiceClient<Channel>>>,
-    pub inference: Arc<Mutex<InferenceServiceClient<Channel>>>,
-    pub system: Arc<Mutex<SystemServiceClient<Channel>>>,
+    inner: Arc<ClientInner>,
 }
 
 pub use proto::actuator::{ActuatorCommand, CommandActuatorsRequest};
@@ -63,14 +68,24 @@ impl Client {
             .await?;
 
         Ok(Self {
-            imu: Arc::new(Mutex::new(ImuServiceClient::new(conn.clone()))),
-            actuator: Arc::new(Mutex::new(ActuatorServiceClient::new(conn.clone()))),
-            sound: Arc::new(Mutex::new(SoundServiceClient::new(conn.clone()))),
-            processes: Arc::new(Mutex::new(ProcessManagerServiceClient::new(conn.clone()))),
-            led_matrix: Arc::new(Mutex::new(LedMatrixServiceClient::new(conn.clone()))),
-            inference: Arc::new(Mutex::new(InferenceServiceClient::new(conn.clone()))),
-            system: Arc::new(Mutex::new(SystemServiceClient::new(conn))),
+            inner: Arc::new(ClientInner {
+                imu: Mutex::new(ImuServiceClient::new(conn.clone())),
+                actuator: Mutex::new(ActuatorServiceClient::new(conn.clone())),
+                sound: Mutex::new(SoundServiceClient::new(conn.clone())),
+                processes: Mutex::new(ProcessManagerServiceClient::new(conn.clone())),
+                led_matrix: Mutex::new(LedMatrixServiceClient::new(conn.clone())),
+                inference: Mutex::new(InferenceServiceClient::new(conn.clone())),
+                system: Mutex::new(SystemServiceClient::new(conn)),
+            }),
         })
+    }
+}
+
+impl Deref for Client {
+    type Target = ClientInner;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
 }
 
@@ -144,6 +159,10 @@ impl Robot for KBot {
                 })
                 .await?;
         }
+
+        tokio::spawn(async move {
+            // TODO: poll IMU data
+        });
 
         Ok(Self { client })
     }
