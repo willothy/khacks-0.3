@@ -1,12 +1,15 @@
 use kos::{
-    hal::{
-        actuator_service_client::ActuatorServiceClient, imu_service_client::ImuServiceClient,
-        inference_service_client::InferenceServiceClient,
-        led_matrix_service_client::LedMatrixServiceClient,
-        process_manager_service_client::ProcessManagerServiceClient,
-        sound_service_client::SoundServiceClient,
-    },
-    kos_proto::{self as proto, system::system_service_client::SystemServiceClient},
+  hal::{
+    actuator_service_client::ActuatorServiceClient,
+    imu_service_client::ImuServiceClient,
+    inference_service_client::InferenceServiceClient,
+    led_matrix_service_client::LedMatrixServiceClient,
+    process_manager_service_client::ProcessManagerServiceClient,
+    sound_service_client::SoundServiceClient,
+  },
+  kos_proto::{
+    self as proto, system::system_service_client::SystemServiceClient,
+  },
 };
 use tonic::transport::Channel;
 
@@ -24,20 +27,22 @@ pub struct Client {
     pub system: proto::system::system_service_client::SystemServiceClient<Channel>,
 }
 
-impl Client {
-    pub async fn connect(addr: impl Into<String>) -> eyre::Result<Self> {
-        let conn = tonic::transport::Endpoint::new(addr.into())?
-            .connect()
-            .await?;
+pub use proto::actuator::{ActuatorCommand, CommandActuatorsRequest};
 
-        Ok(Self {
-            imu: ImuServiceClient::new(conn.clone()),
-            actuator: ActuatorServiceClient::new(conn.clone()),
-            sound: SoundServiceClient::new(conn.clone()),
-            processes: ProcessManagerServiceClient::new(conn.clone()),
-            led_matrix: LedMatrixServiceClient::new(conn.clone()),
-            inference: InferenceServiceClient::new(conn.clone()),
-            system: SystemServiceClient::new(conn),
-        })
-    }
+impl Client {
+  pub async fn connect(addr: impl Into<String>) -> eyre::Result<Self> {
+    let conn = tonic::transport::Endpoint::new(addr.into())?
+      .connect()
+      .await?;
+
+    Ok(Self {
+      imu: ImuServiceClient::new(conn.clone()),
+      actuator: ActuatorServiceClient::new(conn.clone()),
+      sound: SoundServiceClient::new(conn.clone()),
+      processes: ProcessManagerServiceClient::new(conn.clone()),
+      led_matrix: LedMatrixServiceClient::new(conn.clone()),
+      inference: InferenceServiceClient::new(conn.clone()),
+      system: SystemServiceClient::new(conn),
+    })
+  }
 }
