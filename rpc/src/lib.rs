@@ -1,18 +1,16 @@
-use core::f32;
 use kos::{
     hal::{
         actuator_service_client::ActuatorServiceClient, imu_service_client::ImuServiceClient,
         inference_service_client::InferenceServiceClient,
         led_matrix_service_client::LedMatrixServiceClient,
         process_manager_service_client::ProcessManagerServiceClient,
-        sound_service_client::SoundServiceClient, CalibrateActuatorResponse,
-        ConfigureActuatorRequest, GetActuatorsStateRequest,
+        sound_service_client::SoundServiceClient, ConfigureActuatorRequest,
     },
     kos_proto::system::system_service_client::SystemServiceClient,
 };
 use std::{future::Future, ops::Deref, sync::Arc};
 use tokio::sync::Mutex;
-use tonic::{transport::Channel, Result};
+use tonic::transport::Channel;
 
 pub mod proto {
     pub use kos::google_proto as google;
@@ -151,14 +149,43 @@ impl Robot for KBot {
     }
 }
 
+pub struct JointCommand {
+    position: Option<f64>,
+    velocity: Option<f64>,
+    torque: Option<f64>,
+}
+
 impl KBot {
     pub async fn connect(addr: String) -> eyre::Result<Self> {
         let client = Client::connect(addr).await?;
 
-        Ok(Self { client })
+        Self::initialize(client).await
     }
 
-    pub async fn set_joint(&self, joint: Joint, axis: Axis, value: f32) -> eyre::Result<()> {
+    pub async fn command_joint(
+        &self,
+        joint: Joint,
+        axis: Option<Axis>,
+        command: JointCommand,
+    ) -> eyre::Result<()> {
+        let Some(actuator_id) = Self::get_actuator_id(joint, axis) else {
+            return Err(eyre::eyre!("Invalid actuator {joint:?} {axis:?}"));
+        };
+
+        self.client
+            .actuator
+            .lock()
+            .await
+            .command_actuators(CommandActuatorsRequest {
+                commands: vec![ActuatorCommand {
+                    actuator_id,
+                    position: command.position,
+                    velocity: command.velocity,
+                    torque: command.torque,
+                }],
+            })
+            .await?;
+
         Ok(())
     }
 }
