@@ -1,6 +1,7 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 use axum::{extract::State, routing::post, Json, Router};
+use kos::hal::{GetActuatorsStateRequest, ModelUids};
 use rpc::{
   proto::actuator::ConfigureActuatorRequest, ActuatorCommand, Axis, Client,
   CommandActuatorsRequest, Config, JointCommand, KBot, Robot,
@@ -124,7 +125,11 @@ pub async fn dab(State(kbot): State<Arc<rpc::KBot>>) {
 
 pub async fn walk(State(kbot): State<Arc<rpc::KBot>>) {
   let start = std::time::Instant::now();
+  let mut last_iteration = Instant::now();
   loop {
+    println!("ELAPSED {:?}", last_iteration.elapsed());
+    last_iteration = Instant::now();
+
     // if time is greater than 5 seconds, break
     if start.elapsed().as_secs() > 5 {
       break;
@@ -139,6 +144,8 @@ pub async fn walk(State(kbot): State<Arc<rpc::KBot>>) {
 
     let data = data.into_inner();
 
+    // kbot.inference.lock().await.load_models(ModelUids::)
+
     //   "R_Hip_Pitch",
     // "L_Hip_Pitch",
     // "R_Hip_Yaw",
@@ -149,31 +156,60 @@ pub async fn walk(State(kbot): State<Arc<rpc::KBot>>) {
     // "L_Knee_Pitch",
     // "R_Ankle_Pitch",
     // "L_Ankle_Pitch",
+
     let actuators = vec![
-      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Pitch)),
-      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Pitch)),
-      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Yaw)),
-      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Yaw)),
-      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Roll)),
-      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Roll)),
-      KBot::get_actuator_id(rpc::Joint::RightKnee, Some(Axis::Pitch)),
-      KBot::get_actuator_id(rpc::Joint::LeftKnee, Some(Axis::Pitch)),
-      KBot::get_actuator_id(rpc::Joint::RightAnkle, Some(Axis::Pitch)),
-      KBot::get_actuator_id(rpc::Joint::LeftAnkle, Some(Axis::Pitch)),
+      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Pitch)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Pitch)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Yaw)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Yaw)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Roll)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Roll)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::RightKnee, Some(Axis::Pitch)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::LeftKnee, Some(Axis::Pitch)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::RightAnkle, Some(Axis::Pitch)).unwrap(),
+      KBot::get_actuator_id(rpc::Joint::LeftAnkle, Some(Axis::Pitch)).unwrap(),
     ];
 
-    let client = kbot.actuator.lock().await;
-    println!("{:?}", client);
+    let mut client = kbot.actuator.lock().await;
 
+    let Ok(states) = client
+      .get_actuators_state(GetActuatorsStateRequest {
+        actuator_ids: actuators,
+      })
+      .await
+    else {
+      eprintln!("damn it failed");
+      continue;
+    };
+
+    // println!("STATE: {:?}", states);
+
+    let states = states.into_inner();
     // kbot.actuator.lock().a
 
-    json!({
+    let json_val = json!({
       "base_ang_vel": [data.gyro_x, data.gyro_y, data.gyro_z],
-      "projected_gravity": [data.accel_x, data.accel_y, data.accel_z],
-
+      "accel": [data.accel_x, data.accel_y, data.accel_z],
+      "commands": [
+        0.6, 0, 0
+      ],
+      "dof_pos": states.states.iter().map(|state|{
+        state.position()
+      }).collect::<Vec<f64>>(),
+      "dof_vel": states.states.iter().map(|state|{
+        state.velocity()
+      }).collect::<Vec<f64>>(),
+      "actions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     });
 
-    println!("{:?}", data);
+    let response = reqwest::Client::new()
+      .post("http://localhost:4242/infer")
+      .json(&json_val)
+      .send()
+      .await;
+
+    let response = response.unwrap();
+    println!("RESPONSE {}", response.text().await.unwrap().to_string());
   }
 }
 

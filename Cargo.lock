@@ -413,6 +413,8 @@ name = "control"
 version = "0.1.0"
 dependencies = [
  "axum 0.8.1",
+ "kos",
+ "reqwest",
  "rpc",
  "serde",
  "serde_json",

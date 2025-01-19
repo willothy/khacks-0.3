@@ -48,7 +48,7 @@ OBS_SCALES = {
 
 ACTION_SCALE = 0.25
 
-DEFAULT_DOF_POS = torch.zeros(10) 
+DEFAULT_DOF_POS = torch.zeros(10)
 OUTPUT_FIELDS = [
     "R_Hip_Pitch",
     "L_Hip_Pitch",
