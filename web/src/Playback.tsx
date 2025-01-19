@@ -11,6 +11,7 @@ export default function Playback({
   const [websocketConnected, setWebsocketConnected] = useState(false);
   const webRTCAdaptor = useRef<WebRTCAdaptor | null>(null);
   const playingStream = useRef<string | null>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const handleStopPlaying = useCallback(() => {
     if (playingStream.current !== null) {
@@ -21,7 +22,8 @@ export default function Playback({
   useEffect(() => {
     if (webRTCAdaptor.current === undefined || webRTCAdaptor.current === null) {
       webRTCAdaptor.current = new WebRTCAdaptor({
-        websocket_url: `http://${robotIpAddr}:8083/stream/s1/channel/0/webrtc?uuid=s1&channel=0`,
+        isPlayMode: true,
+        websocketURL: `http://${robotIpAddr}:8083/stream/s1/channel/0/webrtc?uuid=s1&channel=0`,
         mediaConstraints: {
           video: true,
           audio: true,
@@ -35,9 +37,12 @@ export default function Playback({
         },
         remoteVideoId: "remoteVideo",
         callback: (info: string) => {
+          console.log("WS MSG", info);
           if (info === "initialized") {
+            console.log("WS Connected");
             setWebsocketConnected(true);
-            webRTCAdaptor.current?.play("0");
+            // remoteVideoRef.current.srcObject =
+            // webRTCAdaptor.current?.play("0");
           }
         },
         callbackError: (error: string, message: string) => {
@@ -56,7 +61,7 @@ export default function Playback({
       <span className="absolute">
         {websocketConnected ? null : "Not connected"}
       </span>
-      <video id="remoteVideo" muted autoPlay playsInline />
+      <video ref={remoteVideoRef} id="remoteVideo" muted autoPlay playsInline />
     </div>
   );
 }
