@@ -1,6 +1,7 @@
 [submodule "ml/genesis_playground"]
 	path = ml/genesis_playground
-	url = git@github.com:kscalelabs/genesis_playground.git
+	url = git@github.com:JChunX/genesis_playground.git
+	branch = jason/khack
 [submodule "ml/mujoco_playground"]
 	path = ml/mujoco_playground
 	url = git@github.com:JChunX/mujoco_playground.git
