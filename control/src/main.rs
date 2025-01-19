@@ -33,6 +33,9 @@ async fn main() {
     .route("/dab", post(dab))
     .route("/muscles", post(muscles))
     .route("/walk", post(walk))
+    .route("/zero", post(zero))
+    .route("/info", axum::routing::get(info))
+    .route("/test", post(test))
     .with_state(Arc::new(kbot));
 
   let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
@@ -48,7 +51,7 @@ pub async fn dab(State(kbot): State<Arc<rpc::KBot>>) {
       rpc::Joint::RightShoulder,
       Some(rpc::Axis::Pitch),
       JointCommand {
-        position: Some(-45.),
+        position: Some(90.),
         velocity: None,
         torque: None,
       },
@@ -61,7 +64,7 @@ pub async fn dab(State(kbot): State<Arc<rpc::KBot>>) {
       rpc::Joint::RightShoulder,
       Some(rpc::Axis::Yaw),
       JointCommand {
-        position: Some(-25.),
+        position: Some(-10.),
         velocity: None,
         torque: None,
       },
@@ -74,7 +77,7 @@ pub async fn dab(State(kbot): State<Arc<rpc::KBot>>) {
       rpc::Joint::RightElbow,
       Some(rpc::Axis::Yaw),
       JointCommand {
-        position: Some(0.),
+        position: Some(-90.),
         velocity: None,
         torque: None,
       },
@@ -123,10 +126,36 @@ pub async fn dab(State(kbot): State<Arc<rpc::KBot>>) {
     .unwrap();
 }
 
+pub async fn info(State(kbot): State<Arc<rpc::KBot>>) {
+  let out = kbot
+    .client
+    .actuator
+    .lock()
+    .await
+    .get_actuators_state(GetActuatorsStateRequest {
+      actuator_ids: vec![33],
+    })
+    .await
+    .unwrap();
+
+  println!("{:?}", out);
+}
+
 pub async fn walk(State(kbot): State<Arc<rpc::KBot>>) {
   let start = std::time::Instant::now();
   let mut last_iteration = Instant::now();
-
+  // kbot
+  //   .command_joint(
+  //     rpc::Joint::LeftAnkle,
+  //     Some(Axis::Pitch),
+  //     JointCommand {
+  //       position: Some(0.),
+  //       torque: None,
+  //       velocity: None,
+  //     },
+  //   )
+  //   .await
+  //   .unwrap();
   loop {
     println!("ELAPSED {:?}", last_iteration.elapsed());
     last_iteration = Instant::now();
@@ -227,9 +256,263 @@ pub async fn walk(State(kbot): State<Arc<rpc::KBot>>) {
     //   .unwrap()
     drop(client);
     let kbot = kbot.clone();
+    // kbot
+    //   .command_joint(
+    //     rpc::Joint::LeftHip,
+    //     Some(Axis::Yaw),
+    //     JointCommand {
+    //       position: Some(100.0),
+    //       torque: None,
+    //       velocity: None,
+    //     },
+    //   )
+    //   .await
+    //   .unwrap();
     command_all_joints(joints, &kbot.clone()).await.unwrap();
     println!("COMMANDS SENT");
   }
+}
+
+pub async fn zero(State(kbot): State<Arc<rpc::KBot>>) {
+  println!("TRYING TO ZERO");
+
+  // Left arm joints
+  kbot
+    .command_joint(
+      rpc::Joint::LeftShoulder,
+      Some(Axis::Yaw),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::LeftShoulder,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::LeftElbow,
+      Some(Axis::Yaw),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::LeftGripper,
+      None,
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  // Right arm joints
+  kbot
+    .command_joint(
+      rpc::Joint::RightShoulder,
+      Some(Axis::Yaw),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::RightShoulder,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::RightElbow,
+      Some(Axis::Yaw),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::RightGripper,
+      None,
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  // Left leg joints
+  kbot
+    .command_joint(
+      rpc::Joint::LeftHip,
+      Some(Axis::Yaw),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::LeftHip,
+      Some(Axis::Roll),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::LeftHip,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::LeftKnee,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::LeftAnkle,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  // Right leg joints
+  kbot
+    .command_joint(
+      rpc::Joint::RightHip,
+      Some(Axis::Yaw),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::RightHip,
+      Some(Axis::Roll),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::RightHip,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::RightKnee,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
+
+  kbot
+    .command_joint(
+      rpc::Joint::RightAnkle,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(0.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
 }
 
 pub async fn muscles(State(kbot): State<Arc<rpc::KBot>>) {
@@ -264,7 +547,7 @@ pub async fn muscles(State(kbot): State<Arc<rpc::KBot>>) {
       rpc::Joint::RightShoulder,
       Some(Axis::Pitch),
       JointCommand {
-        position: Some(45.),
+        position: Some(0.),
         velocity: None,
         torque: None,
       },
@@ -292,7 +575,7 @@ pub async fn muscles(State(kbot): State<Arc<rpc::KBot>>) {
       rpc::Joint::LeftShoulder,
       Some(rpc::Axis::Yaw),
       JointCommand {
-        position: Some(-20.),
+        position: Some(-90.),
         velocity: None,
         torque: None,
       },
@@ -305,7 +588,7 @@ pub async fn muscles(State(kbot): State<Arc<rpc::KBot>>) {
       rpc::Joint::LeftElbow,
       Some(rpc::Axis::Yaw),
       JointCommand {
-        position: Some(-45.),
+        position: Some(30.),
         velocity: None,
         torque: None,
       },
@@ -322,9 +605,9 @@ struct JointAngles {
   l_ankle_pitch: f64,
   #[serde(rename = "L_Hip_Pitch")]
   l_hip_pitch: f64,
-  #[serde(rename = "L_Hip_Roll")]
+  #[serde(rename = "L_Hip_Yaw")] // SWAPPED WITH ROLL
   l_hip_roll: f64,
-  #[serde(rename = "L_Hip_Yaw")]
+  #[serde(rename = "L_Hip_Roll")]
   l_hip_yaw: f64,
   #[serde(rename = "L_Knee_Pitch")]
   l_knee_pitch: f64,
@@ -332,20 +615,22 @@ struct JointAngles {
   r_ankle_pitch: f64,
   #[serde(rename = "R_Hip_Pitch")]
   r_hip_pitch: f64,
-  #[serde(rename = "R_Hip_Roll")]
+  #[serde(rename = "R_Hip_Yaw")] // SWAPPED WITH ROLL
   r_hip_roll: f64,
-  #[serde(rename = "R_Hip_Yaw")]
+  #[serde(rename = "R_Hip_Roll")]
   r_hip_yaw: f64,
   #[serde(rename = "R_Knee_Pitch")]
   r_knee_pitch: f64,
 }
 
+use futures::future;
+
 async fn command_all_joints(
   joints: JointAngles,
   kbot: &KBot,
 ) -> Result<(), Box<dyn std::error::Error>> {
-  kbot
-    .command_joint(
+  let commands = vec![
+    kbot.command_joint(
       rpc::Joint::LeftAnkle,
       Some(Axis::Pitch),
       JointCommand {
@@ -353,11 +638,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::LeftHip,
       Some(Axis::Pitch),
       JointCommand {
@@ -365,11 +647,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::LeftHip,
       Some(Axis::Roll),
       JointCommand {
@@ -377,11 +656,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::LeftHip,
       Some(Axis::Yaw),
       JointCommand {
@@ -389,11 +665,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::LeftKnee,
       Some(Axis::Pitch),
       JointCommand {
@@ -401,11 +674,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::RightAnkle,
       Some(Axis::Pitch),
       JointCommand {
@@ -413,11 +683,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::RightHip,
       Some(Axis::Pitch),
       JointCommand {
@@ -425,11 +692,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::RightHip,
       Some(Axis::Roll),
       JointCommand {
@@ -437,11 +701,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::RightHip,
       Some(Axis::Yaw),
       JointCommand {
@@ -449,11 +710,8 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
-
-  kbot
-    .command_joint(
+    ),
+    kbot.command_joint(
       rpc::Joint::RightKnee,
       Some(Axis::Pitch),
       JointCommand {
@@ -461,8 +719,24 @@ async fn command_all_joints(
         velocity: None,
         torque: None,
       },
-    )
-    .await?;
+    ),
+  ];
 
+  future::try_join_all(commands).await?;
   Ok(())
+}
+
+pub async fn test(State(kbot): State<Arc<rpc::KBot>>) {
+  kbot
+    .command_joint(
+      rpc::Joint::LeftAnkle,
+      Some(Axis::Pitch),
+      JointCommand {
+        position: Some(20.0),
+        torque: None,
+        velocity: None,
+      },
+    )
+    .await
+    .unwrap();
 }
