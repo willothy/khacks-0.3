@@ -1,7 +1,11 @@
 import { WebRTCAdaptor } from "@antmedia/webrtc_adaptor";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export default function Playback({ websocketUrl }: { websocketUrl: string }) {
+export default function Playback({
+  websocketUrl: robotIpAddr,
+}: {
+  websocketUrl: string;
+}) {
   const [websocketConnected, setWebsocketConnected] = useState(false);
   const webRTCAdaptor = useRef<WebRTCAdaptor | null>(null);
   const playingStream = useRef<string | null>(null);
@@ -15,7 +19,7 @@ export default function Playback({ websocketUrl }: { websocketUrl: string }) {
   useEffect(() => {
     if (webRTCAdaptor.current === undefined || webRTCAdaptor.current === null) {
       webRTCAdaptor.current = new WebRTCAdaptor({
-        websocket_url: websocketUrl,
+        websocket_url: `http://${robotIpAddr}:8083/stream/s1/channel/0/webrtc?uuid=s1&channel=0`,
         mediaConstraints: {
           video: true,
           audio: true,
@@ -42,7 +46,7 @@ export default function Playback({ websocketUrl }: { websocketUrl: string }) {
         },
       });
     }
-  }, [handleStopPlaying, websocketUrl]);
+  }, [handleStopPlaying, robotIpAddr]);
 
   return (
     <div className="flex">
