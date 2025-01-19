@@ -5,7 +5,6 @@ use kos::{
         led_matrix_service_client::LedMatrixServiceClient,
         process_manager_service_client::ProcessManagerServiceClient,
         sound_service_client::SoundServiceClient, ConfigureActuatorRequest, WriteBufferRequest,
-        WriteColorBufferRequest,
     },
     kos_proto::system::system_service_client::SystemServiceClient,
 };
@@ -181,73 +180,26 @@ pub struct JointCommand {
     pub torque: Option<f64>,
 }
 
-const EMPTY_SCREEN: [[u8; 8]; 8] = [
+const FACE_1: [[u8; 16]; 4] = [
     [
         0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
+        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
+        0b00000000, 0b00000000,
     ],
     [
         0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
+        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
+        0b00000000, 0b00000000,
     ],
     [
         0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
+        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
+        0b00000000, 0b00000000,
     ],
     [
         0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
         0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-];
-
-const FACE_1: [[u8; 8]; 8] = [
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-    ],
-    [
-        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
+        0b00000000, 0b00000000,
     ],
 ];
 
@@ -257,19 +209,7 @@ impl KBot {
 
         let bot = Self::initialize(client.clone(), config).await?;
 
-        let buffer: Vec<u8> = FACE_1.into_iter().flatten().collect();
-
-        assert_eq!(buffer.len(), 64);
-
-        client
-            .led_matrix
-            .lock()
-            .await
-            .write_buffer(WriteBufferRequest {
-                buffer,
-                // buffer: std::iter::repeat(0x00).take(64).collect()
-            })
-            .await?;
+        bot.clear_screen().await?;
 
         tokio::spawn({
             let client = client.clone();
@@ -303,6 +243,28 @@ impl KBot {
         });
 
         Ok(bot)
+    }
+
+    pub async fn set_screen_contents(&self, contents: Vec<u8>) -> eyre::Result<()> {
+        if contents.len() != 64 {
+            return Err(eyre::eyre!(
+                "Invalid buffer size: expected 64, found {}",
+                contents.len()
+            ));
+        }
+
+        self.client
+            .led_matrix
+            .lock()
+            .await
+            .write_buffer(WriteBufferRequest { buffer: contents })
+            .await?;
+        Ok(())
+    }
+
+    pub async fn clear_screen(&self) -> eyre::Result<()> {
+        self.set_screen_contents(std::iter::repeat(0x00).take(64).collect())
+            .await
     }
 
     pub async fn command_joint(
