@@ -1,11 +1,7 @@
 import { WebRTCAdaptor } from "@antmedia/webrtc_adaptor";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export default function Playback({
-  websocketUrl: robotIpAddr,
-}: {
-  websocketUrl: string;
-}) {
+export default function Playback({ robotIpAddr }: { robotIpAddr: string }) {
   const [websocketConnected, setWebsocketConnected] = useState(false);
   const webRTCAdaptor = useRef<WebRTCAdaptor | null>(null);
   const playingStream = useRef<string | null>(null);
@@ -35,6 +31,7 @@ export default function Playback({
         callback: (info: string) => {
           if (info === "initialized") {
             setWebsocketConnected(true);
+            webRTCAdaptor.current?.play("0");
           }
         },
         callbackError: (error: string, message: string) => {
@@ -49,7 +46,7 @@ export default function Playback({
   }, [handleStopPlaying, robotIpAddr]);
 
   return (
-    <div className="flex">
+    <div className="flex bg-white w-full h-full">
       {websocketConnected ? null : "Not connected"}
       <video id="remoteVideo" muted autoPlay playsInline />
     </div>
