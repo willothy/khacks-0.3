@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{extract::State, routing::post, Json, Router};
 use rpc::{
-  proto::actuator::ConfigureActuatorRequest, ActuatorCommand, Axis,
+  proto::actuator::ConfigureActuatorRequest, ActuatorCommand, Axis, Client,
   CommandActuatorsRequest, Config, JointCommand, KBot, Robot,
 };
 use serde_json::json;
@@ -139,7 +139,6 @@ pub async fn walk(State(kbot): State<Arc<rpc::KBot>>) {
 
     let data = data.into_inner();
 
-    let actuator = kbot.actuator.lock().await;
     //   "R_Hip_Pitch",
     // "L_Hip_Pitch",
     // "R_Hip_Yaw",
@@ -150,10 +149,23 @@ pub async fn walk(State(kbot): State<Arc<rpc::KBot>>) {
     // "L_Knee_Pitch",
     // "R_Ankle_Pitch",
     // "L_Ankle_Pitch",
-    let actuators = vec![KBot::get_actuator_id(
-      rpc::Joint::RightHip,
-      Some(Axis::Pitch),
-    )];
+    let actuators = vec![
+      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Pitch)),
+      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Pitch)),
+      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Yaw)),
+      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Yaw)),
+      KBot::get_actuator_id(rpc::Joint::RightHip, Some(Axis::Roll)),
+      KBot::get_actuator_id(rpc::Joint::LeftHip, Some(Axis::Roll)),
+      KBot::get_actuator_id(rpc::Joint::RightKnee, Some(Axis::Pitch)),
+      KBot::get_actuator_id(rpc::Joint::LeftKnee, Some(Axis::Pitch)),
+      KBot::get_actuator_id(rpc::Joint::RightAnkle, Some(Axis::Pitch)),
+      KBot::get_actuator_id(rpc::Joint::LeftAnkle, Some(Axis::Pitch)),
+    ];
+
+    let client = kbot.actuator.lock().await;
+    println!("{:?}", client);
+
+    // kbot.actuator.lock().a
 
     json!({
       "base_ang_vel": [data.gyro_x, data.gyro_y, data.gyro_z],
