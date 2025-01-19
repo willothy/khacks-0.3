@@ -1,3 +1,6 @@
 [submodule "ml/genesis_playground"]
 	path = ml/genesis_playground
 	url = git@github.com:JChunX/genesis_playground.git
+[submodule "ml/mujoco_playground"]
+	path = ml/mujoco_playground
+	url = git@github.com:JChunX/mujoco_playground.git
