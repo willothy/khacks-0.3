@@ -62,6 +62,8 @@ OUTPUT_FIELDS = [
     "L_Ankle_Pitch",
 ]
 
+action_buffer = torch.zeros(10)
+
 @app.route('/infer', methods=['POST'])
 def infer():
     data = request.json
@@ -74,13 +76,14 @@ def infer():
         torch.tensor(data['commands']) * OBS_SCALES['command'],
         (torch.tensor(data['dof_pos']) - DEFAULT_DOF_POS) * OBS_SCALES['dof_pos'],
         torch.tensor(data['dof_vel']) * OBS_SCALES['dof_vel'],
-        torch.tensor(data['actions'])
+        action_buffer
     ], axis=-1).float().to(device)
-
-    print(input_data.shape)
 
     with torch.inference_mode():
         output = compiled_model(input_data.unsqueeze(0)) * ACTION_SCALE
+
+    global action_buffer
+    action_buffer = output.squeeze(0)
 
     output_data = {field: value for field, value in zip(OUTPUT_FIELDS, output.squeeze(0).tolist())}
     return jsonify(output_data)
