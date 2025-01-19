@@ -7,7 +7,7 @@ from inference_utils import compute_gravity_vector
 app = Flask(__name__)
 
 # Device configuration
-device = torch.device('cuda')
+device = torch.device('mps')
 
 # Model configuration
 INPUT_DIM = 39
