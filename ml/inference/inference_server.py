@@ -66,8 +66,7 @@ OUTPUT_FIELDS = [
 def infer():
     data = request.json
 
-    accel_vector = (data['ax'], data['ay'], data['az'])
-    projected_gravity = compute_gravity_vector(*accel_vector)
+    projected_gravity = compute_gravity_vector(*data['accel'])
 
     input_data = torch.cat([
         torch.tensor(data['base_ang_vel']) * OBS_SCALES['ang_vel'],
