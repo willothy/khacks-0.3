@@ -358,7 +358,7 @@ impl KBot {
                     .await
                     .ok();
 
-                tokio::time::sleep(Duration::from_millis(250)).await;
+                tokio::time::sleep(Duration::from_millis(50)).await;
 
                 client
                     .led_matrix
