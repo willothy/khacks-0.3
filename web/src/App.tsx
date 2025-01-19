@@ -17,37 +17,39 @@ function App() {
     <div className="flex justify-between w-screen h-screen px-8">
       <div className="w-48 p-8 h-screen flex flex-col justify-between items-center">
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => executeCommand("muscles")}
         >
           <BicepsFlexed />
+          {"Flex"}
         </button>
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => executeCommand("dab")}
         >
           <Grab />
+          {"Dab"}
         </button>
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           <Angry />
         </button>
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           <Smile />
         </button>
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           <BicepsFlexed />
         </button>
         <button
-          className="h-20 w-20 z-30 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 z-30 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           <Radiation />
@@ -58,36 +60,36 @@ function App() {
 
       <div className="w-48 p-8 h-screen flex flex-col justify-between items-center">
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           Smile
         </button>
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         ></button>
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           <Smile />
         </button>
 
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           Hi
         </button>
         <button
-          className="h-20 w-20 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           Hi
         </button>
         <button
-          className="h-20 w-20 z-30 rounded-lg flex justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
+          className="h-20 w-20 z-30 rounded-lg flex gap-2 justify-center items-center bg-pink-400 transition-all hover:scale-110 hover:bg-pink-700"
           onClick={() => handleClick()}
         >
           Hi
@@ -101,49 +103,49 @@ function App() {
         />
         <div className="w-full flex justify-center items-end space-x-6">
           <button
-            className="h-20 w-20 rounded-lg  bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
+            className="h-20 w-20 rounded-lg  gap-2 bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
             onClick={() => handleClick()}
           >
             <Smile />
           </button>
           <button
-            className="h-20 w-20 rounded-lg bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
+            className="h-20 w-20 rounded-lg gap-2 bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
             onClick={() => handleClick()}
           >
             <Smile />
           </button>
           <button
-            className="h-20 w-20 rounded-lg bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
+            className="h-20 w-20 rounded-lg gap-2 bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
             onClick={() => handleClick()}
           >
             <Smile />
           </button>
           <button
-            className="h-20 w-20 rounded-lg bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
+            className="h-20 w-20 rounded-lg gap-2 bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
             onClick={() => handleClick()}
           >
             <Smile />
           </button>
           <button
-            className="h-20 w-20 rounded-lg bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
+            className="h-20 w-20 rounded-lg gap-2 bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
             onClick={() => handleClick()}
           >
             <Smile />
           </button>
           <button
-            className="h-20 w-20 rounded-lg bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
+            className="h-20 w-20 rounded-lg gap-2 bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
             onClick={() => handleClick()}
           >
             <Smile />
           </button>
           <button
-            className="h-20 w-20 rounded-lg bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
+            className="h-20 w-20 rounded-lg gap-2 bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
             onClick={() => handleClick()}
           >
             <Smile />
           </button>
           <button
-            className="h-20 w-20 rounded-lg bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
+            className="h-20 w-20 rounded-lg gap-2 bg-violet-500 transition-all hover:scale-110 hover:bg-violet-900"
             onClick={() => handleClick()}
           >
             <Smile />
