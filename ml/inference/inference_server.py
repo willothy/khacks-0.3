@@ -7,7 +7,7 @@ from inference_utils import compute_gravity_vector
 app = Flask(__name__)
 
 # Device configuration
-device = torch.device('mps')
+device = torch.device('cuda')
 
 # Model configuration
 INPUT_DIM = 39
@@ -66,6 +66,8 @@ action_buffer = torch.zeros(10)
 
 @app.route('/infer', methods=['POST'])
 def infer():
+    global action_buffer
+
     data = request.json
 
     projected_gravity = compute_gravity_vector(*data['accel'])
@@ -82,8 +84,7 @@ def infer():
     with torch.inference_mode():
         output = compiled_model(input_data.unsqueeze(0)) * ACTION_SCALE
 
-    global action_buffer
-    action_buffer = output.squeeze(0)
+    action_buffer = output.squeeze(0).detach().cpu()
 
     output_data = {field: value for field, value in zip(OUTPUT_FIELDS, output.squeeze(0).tolist())}
     return jsonify(output_data)
