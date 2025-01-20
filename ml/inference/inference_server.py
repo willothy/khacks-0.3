@@ -82,9 +82,10 @@ def infer():
     ], axis=-1).float().to(device)
 
     with torch.inference_mode():
-        output = compiled_model(input_data.unsqueeze(0)) * ACTION_SCALE
+        output = compiled_model(input_data.unsqueeze(0))
 
     action_buffer = output.squeeze(0).detach().cpu()
+    output = output * ACTION_SCALE
 
     output_data = {field: value for field, value in zip(OUTPUT_FIELDS, output.squeeze(0).tolist())}
     return jsonify(output_data)
