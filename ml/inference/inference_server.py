@@ -24,7 +24,7 @@ policy_net = PolicyNetwork(
 
 
 # Load Pretrained Weights
-model_path = '../genesis_playground/zbot-walking/model_400.pt'
+model_path = '../genesis_playground/artifacts/model_360.pt'
 state_dict = torch.load(model_path, map_location="cpu")["model_state_dict"]
 state_dict = sanitize_model_weights(policy_net, state_dict)
 policy_net.load_state_dict(state_dict)

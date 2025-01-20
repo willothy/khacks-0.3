@@ -116,7 +116,7 @@ pub trait Robot: Sized {
 impl Robot for KBot {
   fn list_actuator_ids() -> Vec<u32> {
     vec![
-      11, 12, 13, 14, // left upper
+      11, 12, // 13, // 14, // left upper
       21, 22, 23, // right upper
       31, 32, 33, 34, 35, // left lower
       41, 42, 43, 44, 45, // right lower
